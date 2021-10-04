@@ -1,7 +1,12 @@
+import datetime
 from typing import Callable
 from functools import partial
-from cloudtask.utils import get_task_path_name
 from django.utils.module_loading import import_string
+
+from cloudtask.utils import (
+    get_task_path_name,
+    get_encoded_payload)
+from cloudtask.configurations import conf
 
 
 class BaseTask(object):
@@ -15,17 +20,25 @@ class Task(object):
     __task: BaseTask
     __data: dict
     __headers: dict
-    queue: str
+    __sae: str # service account email
+    queue: str # cloud task queue name
+    url: str
 
-    def __init__(self, task: BaseTask, queue: str, data: dict = {},
-        headers: dict = {}) -> None:
+    def __init__(self, task: BaseTask,
+            queue: str,
+            data: dict = {},
+            headers: dict = {},
+            url: str = None,
+            service_account_email: str = None) -> None:
         self.__task = task
         self.__data = data
         self.__headers = headers
+        self.__sae = service_account_email or conf.SAE
         self.queue = queue
+        self.url = url or conf.URL
     
     def setup(self) -> None:
-        """makes basic validations abd setup the task"""
+        """makes basic validations and setup the task"""
         pass
 
     def delay(self) -> None:
@@ -34,18 +47,37 @@ class Task(object):
 
     push = delay
 
+    def schedule(self, at: datetime.datetime) -> None:
+        """schedule task to run later"""
+        pass
+
     def execute(self) -> None:
         """runs/execute the task"""
         pass
     
     def get_http_body(self) -> dict:
         """retruns the request body for HTTP handlers such Cloud Run"""
-        pass
+        body = dict(
+            task=dict(
+                httpRequest=dict(
+                    httpMethod='POST',
+                    url=self.url,
+                    headers=self.headers,
+                    body=self.datab64encoded))
+                )
+        if self.__sae:
+            body['task']['httpRequest']['oidcToken'] = dict(
+                service_account_email=self.__sae)
+        return body
 
-    def datab64(self) -> str:
-        """returns raw base64 encoded data"""
-        pass
-
+    @property
+    def datab64encoded(self) -> bytes:
+        """returns base64 encoded data"""
+        payload: dict = dict(
+            path=self.path, # internal task path e.g project.app.tasks.welcome
+            data=self.data)
+        return get_encoded_payload(payload)
+    
     @property
     def data(self) -> dict:
         """return the kwords args passed on task function"""
@@ -70,6 +102,13 @@ class Task(object):
     def queue_path(self) -> str:
         """returns the full queue path on google cloud task"""
         pass
+    
+    def __enqueue(self) -> None:
+        """Enqueue the task on cloud run"""
+        pass
+
+    def __call__(self) -> None:
+        self.__task.execute(request=None, **self.data)
 
 
 def create_base_task(task: Callable, **kwargs):
