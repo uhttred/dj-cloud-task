@@ -1,8 +1,12 @@
 from django.conf import settings
 
+DCT_SECRET_HEADER_NAME: str = 'X-DCT-SECRET' 
 DEFAULTS: dict = {
     'URL': None, # Default URL target to handle tasks,
     'SAE': None, # Service Account Email Used for HTTP authentication
+    'SECRET': None, # Secreve key to validate incomes request
+    'PROJECT': None, # Google Task Queue related project id
+    'LOCATION': None # Google Task Queue Location
 }
 
 class CloudTaskSettings:
@@ -32,5 +36,6 @@ class CloudTaskSettings:
 
         setattr(self, attr, value)
         return value
+
 
 conf = CloudTaskSettings()

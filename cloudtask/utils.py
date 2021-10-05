@@ -4,7 +4,7 @@ from typing import Callable
 from cloudtask.encoder import DefaultJSONEncoder
 
 
-def get_task_path_name(func: Callable) -> str:
+def get_internal_task_path(func: Callable) -> str:
     return '.'.join((func.__module__, func.__name__))
 
 def get_encoded_payload(payload: dict) -> bytes:

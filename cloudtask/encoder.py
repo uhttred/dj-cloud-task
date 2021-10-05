@@ -27,3 +27,4 @@ class DefaultJSONEncoder(json.JSONEncoder):
             return obj.__str__()
         else:
             return super().default(obj)
+            

@@ -1,10 +1,9 @@
-# from google.cloud import tasks_v2
-# # from google.protobuf import timestamp_pb2
+from google.cloud import tasks_v2
+# from google.protobuf import timestamp_pb2
 
 
-# class CloudTaskClient:
+class CloudTaskClient(tasks_v2.CloudTasksClient):
+    pass
 
-#     client: tasks_v2.CloudTasksClient
 
-
-# client = CloudTaskClient()
+client = CloudTaskClient()
