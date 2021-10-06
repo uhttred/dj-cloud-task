@@ -1,6 +1,7 @@
 from django.conf import settings
 
-DCT_SECRET_HEADER_NAME: str = 'X-DCT-SECRET' 
+DCT_SECRET_HEADER_KEY: str = 'X-DCT-SECRET'
+DCT_SECRET_HEADER_NAME: str = 'HTTP_X_DCT_SECRET'
 DEFAULTS: dict = {
     'URL': None, # Default URL target to handle tasks,
     'SAE': None, # Service Account Email Used for HTTP authentication

@@ -12,7 +12,7 @@ from cloudtask.utils import (
     get_encoded_payload)
 
 from cloudtask.configs import (
-    DCT_SECRET_HEADER_NAME,
+    DCT_SECRET_HEADER_KEY,
     conf)
 
 
@@ -88,8 +88,8 @@ class Task(object):
             request=CoudTaskRequest(), **self.data)
     
     # used to run the task function with args from cloud task
-    def run(self, *args, **kwargs):
-        self.__task.execute(*args, **kwargs)
+    def run(self, request, **kwargs):
+        self.__task.execute(request, **kwargs)
     
     def get_http_body(self, url: str = None) -> dict:
         """retruns the request body for HTTP handlers such Cloud Run"""
@@ -134,7 +134,7 @@ class Task(object):
         for name, value in self.__headers.items():
             headers[name.replace('_', '-').upper()] = value
         if conf.SECRET:
-            headers[DCT_SECRET_HEADER_NAME] = conf.SECRET
+            headers[DCT_SECRET_HEADER_KEY] = conf.SECRET
         headers['Content-Type'] = 'application/json'
         return headers        
     
@@ -173,4 +173,4 @@ def create_base_task(task: Callable, **kwargs):
 
 
 def get_task_by_path(path: str) -> Task:
-    return import_string(path)
+    return import_string(path)()
