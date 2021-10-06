@@ -1,17 +1,29 @@
 import datetime
-from typing import Callable
+from typing import Callable, Union
 from functools import cached_property, partial
-from django.utils.module_loading import import_string
 from google.protobuf import timestamp_pb2
+
+from django.http.request import HttpRequest
+from django.utils.module_loading import import_string
 
 from cloudtask.client import CloudTaskClient, client
 from cloudtask.utils import (
     get_internal_task_path,
     get_encoded_payload)
 
-from cloudtask.configurations import (
+from cloudtask.configs import (
     DCT_SECRET_HEADER_NAME,
     conf)
+
+
+class CoudTaskRequest:
+    request: Union[HttpRequest, None]
+    headers: Union[dict, None]
+
+    def __init__(self,
+        request: HttpRequest = None, headers: dict = None) -> None:
+        self.request = request
+        self.headers = headers
 
 
 class BaseTask(object):
@@ -72,7 +84,11 @@ class Task(object):
 
     def execute(self) -> None:
         """run/execute the task immediately without push to cloud task"""
-        self.__task.execute(request=None, **self.data)
+        self.__task.execute(
+            request=CoudTaskRequest(), **self.data)
+    
+    # used to run the task function with args from cloud task
+    run = __task.execute
     
     def get_http_body(self, url: str = None) -> dict:
         """retruns the request body for HTTP handlers such Cloud Run"""
@@ -155,5 +171,5 @@ def create_base_task(task: Callable, **kwargs):
     return type(task.__name__, (BaseTask,), attrs)()
 
 
-def get_task_by_path(path: str):
+def get_task_by_path(path: str) -> Task:
     return import_string(path)
