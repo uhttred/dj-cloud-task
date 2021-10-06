@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.http.request import HttpRequest
 
@@ -15,7 +15,7 @@ def run_task_view(request: HttpRequest):
         headers: dict = request.META
         secret: str = headers.pop(DCT_SECRET_HEADER_NAME, None)
         if conf.SECRET and secret != conf.SECRET:
-            return JsonResponse(status=403)
+            return HttpResponse(status=403)
         if (payload := get_decoded_payload(request.body)) is not None:
             local_task_path: str = payload.get('path', '')
             data: dict = payload.get('data', dict())
@@ -25,6 +25,6 @@ def run_task_view(request: HttpRequest):
                     request=request, headers=headers), **data)
             except Exception as e:
                 # TODO: add logger
-                return JsonResponse(status=500)
+                return HttpResponse(status=500)
         return JsonResponse({'detail': 'Missing request body'}, status=400)
-    return JsonResponse(status=405)
+    return HttpResponse(status=405)
