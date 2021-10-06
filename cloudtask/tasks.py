@@ -88,7 +88,8 @@ class Task(object):
             request=CoudTaskRequest(), **self.data)
     
     # used to run the task function with args from cloud task
-    run = __task.execute
+    def run(self, *args, **kwargs):
+        self.__task.execute(*args, **kwargs)
     
     def get_http_body(self, url: str = None) -> dict:
         """retruns the request body for HTTP handlers such Cloud Run"""
