@@ -2,6 +2,7 @@ import datetime
 from typing import Callable
 from functools import cached_property, partial
 from django.utils.module_loading import import_string
+from google.protobuf import timestamp_pb2
 
 from cloudtask.client import CloudTaskClient, client
 from cloudtask.utils import (
@@ -35,15 +36,15 @@ class Task(object):
             data: dict = {},
             headers: dict = {},
             url: str = None,
-            named: bool = False,
-            service_account_email: str = None) -> None:
+            named: bool = False) -> None:
         self.__task = task
         self.__data = data
         self.__headers = headers
-        self.__sae = service_account_email or conf.SAE
+        self.__sae = conf.SAE
         self.__queue = queue
         self.__named = named
         self.url = url or conf.URL
+        self.setup()
     
     def setup(self) -> None:
         """makes basic validations and setup the task"""
@@ -51,14 +52,23 @@ class Task(object):
 
     def delay(self, url: str = None) -> None:
         """push task to queue"""
-        self.__client.create_task(request={'parent': self.queue_path,
+        self.__enqueue(request={'parent': self.queue_path,
             'task': self.get_http_body(url=url)})
-
+        
     push = delay
 
-    def schedule(self, at: datetime.datetime) -> None:
+    def schedule(self, at: datetime.datetime, url: str =None) -> None:
         """schedule task to run later"""
-        pass
+        timestamp = timestamp_pb2.Timestamp()
+        timestamp.FromDatetime(at)
+        task = self.get_http_body(url=url)
+        task['schedule_time'] = timestamp
+        self.__enqueue(request={'parent': self.queue_path,
+            'task': task})
+
+    def __enqueue(self, request: dict):
+        """creates task"""
+        self.__client.create_task(request=request)
 
     def execute(self) -> None:
         """run/execute the task immediately without push to cloud task"""
