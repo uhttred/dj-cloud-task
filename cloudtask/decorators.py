@@ -2,13 +2,12 @@ from functools import wraps
 from cloudtask.tasks import Task, create_base_task
 
 
-def task(queue: str = 'default', **headers):
+def task(queue: str = None, named: bool = False, url: str = None, headers: dict = {}):
     def decorator(func):
         base = create_base_task(func)
         @wraps(func)
         def inner(**kwargs) -> Task:
-            # returns new task instance
-            return Task(base, queue=queue,
-                data=kwargs, headers=headers)
+            return Task(base, queue=queue, named=named,
+                data=kwargs, headers=headers, url=url)
         return inner
     return decorator

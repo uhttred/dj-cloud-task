@@ -1,0 +1,4 @@
+
+
+class CloudTaskException(Exception):
+    pass
