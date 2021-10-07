@@ -44,7 +44,7 @@ class Task(object):
     url: str
 
     def __init__(self, task: BaseTask,
-            queue: str,
+            queue: str = None,
             data: dict = {},
             headers: dict = {},
             url: str = None,
@@ -53,27 +53,22 @@ class Task(object):
         self.__data = data
         self.__headers = headers
         self.__sae = conf.SAE
-        self.__queue = queue
         self.__named = named
-        self.url = url or conf.URL
-        self.setup()
-    
-    def setup(self) -> None:
-        """makes basic validations and setup the task"""
-        pass
+        self.__queue = queue or conf.get_default_queue_name()
+        self.url = url or conf.get_url()
 
-    def delay(self, url: str = None) -> None:
+    def delay(self) -> None:
         """push task to queue"""
         self.__enqueue(request={'parent': self.queue_path,
-            'task': self.get_http_body(url=url)})
+            'task': self.get_http_body()})
         
     push = delay
 
-    def schedule(self, at: datetime.datetime, url: str =None) -> None:
+    def schedule(self, at: datetime.datetime) -> None:
         """schedule task to run later"""
         timestamp = timestamp_pb2.Timestamp()
         timestamp.FromDatetime(at)
-        task = self.get_http_body(url=url)
+        task = self.get_http_body()
         task['schedule_time'] = timestamp
         self.__enqueue(request={'parent': self.queue_path,
             'task': task})
@@ -91,12 +86,12 @@ class Task(object):
     def run(self, request, **kwargs):
         self.__task.execute(request, **kwargs)
     
-    def get_http_body(self, url: str = None) -> dict:
+    def get_http_body(self) -> dict:
         """retruns the request body for HTTP handlers such Cloud Run"""
         body: dict = {
             'http_request': {
                 'http_method': 'POST',
-                'url': url or self.url,
+                'url': self.url,
                 'headers': self.headers,
                 'body': self.datab64encoded,
                 'oidc_token': {'service_account_email': self.__sae}}
