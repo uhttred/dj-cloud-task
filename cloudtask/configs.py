@@ -9,7 +9,7 @@ DEFAULTS: dict = {
     'SECRET': None, # Secreve key to validate incomes request
     'PROJECT': None, # Google Task Queue related project id
     'LOCATION': None, # Google Task Queue Location,
-    'QUEUE_NAME': None # default queue name
+    'QUEUE': None # default queue name
 }
 
 class CloudTaskSettings:
@@ -47,7 +47,7 @@ class CloudTaskSettings:
             raise Err('Location is not defined!')
     
     def get_default_queue_name(self, raise_exception=True) -> str:
-        if not (name := self.QUEUE_NAME) and raise_exception:
+        if not (name := self.QUEUE) and raise_exception:
             raise Err(
                 'Default queue name not defined. '
                 'Explicitly define on task decorator or in CLOUDTASK settings')

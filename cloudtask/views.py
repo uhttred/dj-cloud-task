@@ -37,7 +37,10 @@ def run_task_view(request: HttpRequest):
             except Exception as e:
                 logger.exception(e, extra=extra)
                 return HttpResponse(status=500)
-            logger.info('Task executed successfully', extra=extra)
+            logger.info((
+                'Task %s from %s queue executed successfully' % (
+                    extra['task_name'], extra['task_queue_name'])),
+                extra=extra)
             return JsonResponse({'detail': 'Success'})
         return JsonResponse({'detail': 'Missing request body'}, status=400)
     return HttpResponse(status=405)
