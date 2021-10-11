@@ -6,7 +6,7 @@ At the moment dj-cloud-task only works with HTTP targets such as Cloud Run, Clou
 
 ### Some Features
 
-* Easely push tasks to Cloud Task using a decorator
+* Easily push tasks to Cloud Task using a decorator
 * Automatically route all tasks from a single endpoint
 * Ease scheduling with native python datetime
 * Named task to avoid duplicated
@@ -14,7 +14,7 @@ At the moment dj-cloud-task only works with HTTP targets such as Cloud Run, Clou
 
 ### Installation
 
-At this moment this package is only available here in Github, you can install it directly from this repository using pip. Later will be available on PiPy.
+At this moment this package is only available here in Github, you can install it directly from this repository using pip. Later will be available on PyPI.
 
 ```sh
 pip install -e git+https://github.com/txiocoder/dj-cloud-task.git@main#egg=cloudtask
@@ -22,8 +22,8 @@ pip install -e git+https://github.com/txiocoder/dj-cloud-task.git@main#egg=cloud
 
 #### Requirements
 
-* Python => 3.9
-* django => 3.2.*
+* Python >= 3.9
+* django >= 3.2.*
 * google-cloud-tasks >= 2.5.*
 
 These are the officially supported python and packages versions. Other versions will probably work
