@@ -16,7 +16,7 @@ from cloudtask.configs import (
     conf)
 
 
-class CoudTaskRequest:
+class CloudTaskRequest:
     request: Union[HttpRequest, None]
     headers: Union[dict, None]
 
@@ -80,7 +80,7 @@ class Task(object):
     def execute(self) -> None:
         """run/execute the task immediately without push to cloud task"""
         self.__task.execute(
-            request=CoudTaskRequest(), **self.data)
+            request=CloudTaskRequest(), **self.data)
     
     # used to run the task function with args from cloud task
     def run(self, request, **kwargs):
