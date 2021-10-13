@@ -4,7 +4,7 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.http.request import HttpRequest
 
-from cloudtask.tasks import get_task_by_path, CoudTaskRequest
+from cloudtask.tasks import get_task_by_path, CloudTaskRequest
 from cloudtask.utils import get_decoded_payload
 from cloudtask.configs import (
     DCT_SECRET_HEADER_NAME,
@@ -32,7 +32,7 @@ def run_task_view(request: HttpRequest):
             data: dict = payload.get('data', dict())
             try:
                 task = get_task_by_path(local_task_path)
-                task.run(request=CoudTaskRequest(
+                task.run(request=CloudTaskRequest(
                     request=request, headers=headers), **data)
             except Exception as e:
                 logger.exception(e, extra=extra)

@@ -10,7 +10,7 @@ At the moment dj-cloud-task only works with HTTP targets such as Cloud Run, Clou
 * Automatically route all tasks from a single endpoint
 * Ease scheduling with native python datetime
 * Named task to avoid duplicated
-* Local development support (coming soon...)
+* Local development support with Redis Queue
 
 ### Installation
 
@@ -22,9 +22,9 @@ pip install -e git+https://github.com/txiocoder/dj-cloud-task.git@main#egg=cloud
 
 #### Requirements
 
-* Python >= 3.9
-* django >= 3.2.*
-* google-cloud-tasks >= 2.5.*
+* [Python](https://www.python.org/) >= 3.9
+* [django](https://www.djangoproject.com/) >= 3.2.*
+* [google-cloud-tasks](https://pypi.org/project/google-cloud-tasks/) >= 2.5.*
 
 These are the officially supported python and packages versions. Other versions will probably work
 
@@ -94,6 +94,7 @@ add(a=30, b=10).push()
 
 This module requires to be authenticated with Google Cloud Platform as a service. The GC Platform provides various ways to authenticate with it. See the GC Platform page about authentication strategies [here](https://cloud.google.com/docs/authentication/production).
 
+
 ## Configurations
 
 In this session you will see how to configure cloudtask. We have required attributes, optional but required in task declaration and  only optional attributes.
@@ -101,14 +102,16 @@ The required attributes are **PROJECT**, **LOCATION** and **SAE**.
 
 Here the details about all attributes accpeted in ``CLOUDTASK``
 
-| Attribute  | Type    | Required  | Description                            |
-|------------|---------|-----------|----------------------------------------|
-| PROJECT    | ``str`` | ``True``  | Project ID from Google Cloud Platform  |
-| LOCATION   | ``str`` | ``True``  | Cloud Task Queue Location              |
-| SAE        | ``str`` | ``True``  | Service Account Email                  |
-| URL        | ``str`` | ``False`` | Default URL                            |
-| QUEUE      | ``srt`` | ``False`` | Default Queue Name                     |
-| SECRET     | ``str`` | ``False`` | Secret key to authorize task execution |
+| Attribute    | Type    | Required  | Description                            |
+|--------------|---------|-----------|----------------------------------------|
+| PROJECT      | ``str`` | ``True``  | Project ID from Google Cloud Platform  |
+| LOCATION     | ``str`` | ``True``  | Cloud Task Queue Location              |
+| SAE          | ``str`` | ``True``  | Service Account Email                  |
+| URL          | ``str`` | ``False`` | Default URL                            |
+| QUEUE        | ``srt`` | ``False`` | Default Queue Name                     |
+| SECRET       | ``str`` | ``False`` | Secret key to authorize task execution |
+| LOCAL_RQ     | ``bool``| ``False`` | Use Redis Queue to handle tasks locally|
+| LOCAL_RQ_URL | ``str`` | ``False`` | Optional Redis connection URL          |
 
 #### URL attribute
 
@@ -218,4 +221,49 @@ def clean_expired(request):
 
 clean_expired().delay()
 clean_expired().delay() # this line will raise an entity error by Cloud Task
+```
+
+## Local development support
+
+### Setup
+
+Use Redis Queue for local development support. To start, first install [rq](https://python-rq.org/), [rq-scheduler](https://github.com/rq/rq-scheduler) and [requests](https://docs.python-requests.org/en/latest/) with pip. You will need a Redis connection too. Then configure on your ``CLOUDTASK`` settings.
+
+```sh
+pip install rq requests
+```
+
+### Configurations
+
+On ``CLOUDTASK`` settings set ``LOCAL_RQ`` as ``True`` to start handle the tasks locally.
+
+```python
+CLOUDTASK: dict = {
+    'LOCAL_RQ': True
+}
+```
+
+You can use ``LOCAL_RQ_URL`` to change the default redis connection string
+
+```python
+CLOUDTASK: dict = {
+    'LOCAL_RQ': True
+    'LOCAL_RQ_URL': 'redis://localhost:6379' # default by redis
+}
+```
+
+That is all, but do not forget to set the right local ``URL`` on your ``CLOUDTASK`` settings to  handle the tasks.
+
+### Running Tasks Locally
+
+To start running task locally just start the worker process with the available management command
+
+```sh
+python manage.py cloudtask-worker
+```
+
+If you have task that are scheduled, start the ``rqscheduler`` worker process to support scheduling tasks. In your project root dir:
+
+```sh
+rqscheduler
 ```

@@ -18,3 +18,4 @@ def get_decoded_payload(payload: bytes) -> Union[dict, None]:
         b64_decoded_payload: bytes = base64.b64decode(payload_str)
         return json.loads(b64_decoded_payload)
     return None
+    

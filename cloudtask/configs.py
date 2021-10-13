@@ -1,6 +1,7 @@
 from django.conf import settings
 from cloudtask.exceptions import CloudTaskException as Err
 
+WORKER_QUEUE_NAME: str = 'cloudtask' 
 DCT_SECRET_HEADER_KEY: str = 'X-DCT-SECRET'
 DCT_SECRET_HEADER_NAME: str = 'HTTP_X_DCT_SECRET'
 DEFAULTS: dict = {
@@ -9,7 +10,9 @@ DEFAULTS: dict = {
     'SECRET': None, # Secreve key to validate incomes request
     'PROJECT': None, # Google Task Queue related project id
     'LOCATION': None, # Google Task Queue Location,
-    'QUEUE': None # default queue name
+    'QUEUE': None, # default queue name,
+    'LOCAL_RQ': False,
+    'LOCAL_RQ_URL': None
 }
 
 class CloudTaskSettings:
