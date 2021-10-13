@@ -230,7 +230,7 @@ clean_expired().delay() # this line will raise an entity error by Cloud Task
 Use Redis Queue for local development support. To start, first install [rq](https://python-rq.org/), [rq-scheduler](https://github.com/rq/rq-scheduler) and [requests](https://docs.python-requests.org/en/latest/) with pip. You will need a Redis connection too. Then configure on your ``CLOUDTASK`` settings.
 
 ```sh
-pip install rq requests
+pip install rq requests rq-scheduler
 ```
 
 ### Configurations
@@ -247,7 +247,7 @@ You can use ``LOCAL_RQ_URL`` to change the default redis connection string
 
 ```python
 CLOUDTASK: dict = {
-    'LOCAL_RQ': True
+    'LOCAL_RQ': True,
     'LOCAL_RQ_URL': 'redis://localhost:6379' # default by redis
 }
 ```
