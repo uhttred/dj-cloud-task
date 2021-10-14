@@ -38,15 +38,15 @@ class CloudTaskSettings:
     
     def validate_sae(self):
         """validate service account email"""
-        if not self.SAE:
+        if not self.LOCAL_RQ and not self.SAE:
             raise Err('Service account e-mail is not defined!')
     
     def validate_project(self):
-        if not self.PROJECT:
+        if not self.LOCAL_RQ and not self.PROJECT:
             raise Err('Project ID is not defined!')
     
     def validate_location(self):
-        if not self.LOCATION:
+        if not self.LOCAL_RQ and not self.LOCATION:
             raise Err('Location is not defined!')
     
     def get_default_queue_name(self, raise_exception=True) -> str:
