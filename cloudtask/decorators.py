@@ -1,8 +1,9 @@
+from typing import Union
 from functools import wraps
 from cloudtask.tasks import Task, create_base_task
 
 
-def task(queue: str = None, named: bool = False, url: str = None, headers: dict = {}):
+def task(queue: str = None, named: Union[bool, str] = False, url: str = None, headers: dict = {}):
     def decorator(func):
         base = create_base_task(func)
         @wraps(func)

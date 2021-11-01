@@ -40,10 +40,10 @@ class Task(object):
     __sae: str # service account email
     __client: CloudTaskClient
     __queue: str # cloud task queue name
-    __named: bool # named task to avoid duplicated
     __local: bool
     __rq: Any # RQ from cloudtask.worker.RQ
     __rq_handler: Any # RQ task handler
+    named: Union[bool, str] # named task to avoid duplicated
     url: str
 
     def __init__(self, task: BaseTask,
@@ -51,14 +51,14 @@ class Task(object):
             data: dict = {},
             headers: dict = {},
             url: str = None,
-            named: bool = False) -> None:
+            named: Union[bool, str] = False) -> None:
         self.__task = task
         self.__data = data
         self.__headers = headers
         self.__sae = conf.SAE
-        self.__named = named
         self.__queue = queue or conf.get_default_queue_name()
         self.__local = conf.LOCAL_RQ # running locally
+        self.named = named
         self.url = url or conf.get_url()
         self.setup()
     
@@ -102,9 +102,9 @@ class Task(object):
         """creates task"""
         self.__client.create_task(request=request)
 
-    def execute(self) -> None:
+    def execute(self) -> Any:
         """run/execute the task immediately without push to cloud task"""
-        self.__task.execute(
+        return self.__task.execute(
             request=CloudTaskRequest(), **self.data)
     
     # used to run the task function with args from cloud task
@@ -121,14 +121,14 @@ class Task(object):
                 'body': self.datab64encoded,
                 'oidc_token': {'service_account_email': self.__sae}}
             }
-        if self.__named:
+        if self.named:
             body['name'] = self.task_path
         return body
     
     @property
     def queue(self) -> str:
         return self.__queue
-
+    
     @property
     def datab64encoded(self) -> bytes:
         """returns base64 encoded data"""
@@ -163,11 +163,13 @@ class Task(object):
         """returns the internal/local task path"""
         return self.__task.path
     
-    @cached_property
+    @property
     def task_path(self) -> str:
         """returns the full task path on google cloud task"""
+        name: str = (self.named if self.named and isinstance(self.named, str)
+            else self.__task.__name__)
         return self.__client.task_path(
-            conf.PROJECT, conf.LOCATION, self.queue, self.__task.__name__)
+            conf.PROJECT, conf.LOCATION, self.queue, name)
     
     @cached_property
     def queue_path(self) -> str:
@@ -175,9 +177,9 @@ class Task(object):
         return self.__client.queue_path(
             conf.PROJECT, conf.LOCATION, self.__queue)
 
-    def __call__(self) -> None:
+    def __call__(self) -> Any:
         """run/execute the task immediately without push to cloud task"""
-        self.execute()
+        return self.execute()
 
 
 def create_base_task(task: Callable, **kwargs):
