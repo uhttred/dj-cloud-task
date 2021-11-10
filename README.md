@@ -112,6 +112,7 @@ Here the details about all attributes accpeted in ``CLOUDTASK``
 | SECRET       | ``str`` | ``False`` | Secret key to authorize task execution |
 | LOCAL_RQ     | ``bool``| ``False`` | Use Redis Queue to handle tasks locally|
 | LOCAL_RQ_URL | ``str`` | ``False`` | Optional Redis connection URL          |
+| TESTING      | ``bool``| ``False`` | Testing Mode                           |
 
 #### URL attribute
 
@@ -137,7 +138,7 @@ task.push()
 
 #### QUEUE attribute
 
-The same as the URL attribute, the QUEUE attribute is optional, and if you don't set it you will need to explicitly pass as a task decorator argument. You cannot change the QUEUE of task instance at runtime.
+The same as the URL attribute, the QUEUE attribute is optional, and if you don't set it you will need to explicitly pass as a task decorator argument. You can not change the QUEUE of task instance at runtime.
 
 ```python
 from cloudtask import task
@@ -146,6 +147,10 @@ from cloudtask import task
 def send_email(request, to: str):
     pass
 ```
+
+#### TESTING attribute
+
+Useful when testing your django application. If True will run all tasks immediately without push to Cloud Task Queue
 
 ## Working with Tasks
 
@@ -210,17 +215,46 @@ add(a=3, b=6).delay()
 add(a=3, b=6).delay()
 ```
 
-By default, the above will run normally. Cloud Task by default adds a unique name for each new task. That makes it possible to have duplicated tasks in the queue, even with the same arguments. If you want a task to only be enqueued once at time, you have to set the task as a named task. Django Cloud Task will give a task name based on the task function name. This feature is very useful when you want to do some recursive tasks.
+By default, the above will run normally. Cloud Task by default adds a unique name for each new task. That makes it possible to have duplicated tasks in the queue, even with the same arguments. If you want a task to only be enqueued once at time, you have to set the task as a named task.
+
+Django Cloud Task will give a task name based on the task function name.
 
 ```python
-from cloudtask import task
+from cloudtask import (
+    CloudTaskRequest,
+    task)
 
 @task(named=True)
-def clean_expired(request):
+def clean_expired(request: CloudTaskRequest):
     pass
 
 clean_expired().delay()
 clean_expired().delay() # this line will raise an entity error by Cloud Task
+```
+
+You can also set the name in ``task`` decorator or dynamically. This feature is very useful when you want to do some recursive tasks.
+
+```python
+from cloudtask.tasks import Task
+from cloudtask import (
+    CloudTaskRequest,
+    task)
+
+
+@task(named='SOME_UNIQUE_NAME')
+def task_do_some(request: CloudTaskRequest):
+    pass
+
+# or dynamically
+
+@task()
+def delete_article(request: CloudTaskRequest, article_id: int):
+    pass
+
+article_id: int = 34
+task: Task = delete_article(article_id=article_id)
+task.named = f'DELETE_ARTICLE_{article_id}'
+task.push()
 ```
 
 ## Local development support

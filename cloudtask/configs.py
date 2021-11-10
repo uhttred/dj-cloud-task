@@ -12,7 +12,8 @@ DEFAULTS: dict = {
     'LOCATION': None, # Google Task Queue Location,
     'QUEUE': None, # default queue name,
     'LOCAL_RQ': False,
-    'LOCAL_RQ_URL': None
+    'LOCAL_RQ_URL': None,
+    'TESTING': False, # Testing Mode
 }
 
 class CloudTaskSettings:

@@ -1,7 +1,7 @@
 import datetime
 from typing import Any, Callable, Union
 from functools import cached_property, partial
-from google.protobuf import timestamp_pb2
+from google.protobuf import timestamp_pb2 # type: ignore
 
 from django.http.request import HttpRequest
 from django.utils.module_loading import import_string
@@ -63,40 +63,45 @@ class Task(object):
         self.setup()
     
     def setup(self) -> None:
-        if self.__local:
-            from cloudtask.worker import RQ, handler
-            self.__rq = RQ()
-            self.__rq_handler = handler
-        else:
-            self.__client = CloudTaskClient()
+        if not conf.TESTING:
+            if self.__local:
+                from cloudtask.worker import RQ, handler
+                self.__rq = RQ()
+                self.__rq_handler = handler
+            else:
+                self.__client = CloudTaskClient()
         
     def delay(self) -> None:
         """push task to queue"""
-        if self.__local:
+        if conf.TESTING:
+            self.execute()
+        elif not self.__local:
+            self.__enqueue(request={'parent': self.queue_path,
+                'task': self.get_http_body()})
+        else:
             self.__rq.queue.enqueue(self.__rq_handler,
                 url=self.url,
                 headers=self.headers,
                 data=self.datab64encoded)
-        else:
-            self.__enqueue(request={'parent': self.queue_path,
-                'task': self.get_http_body()})
-        
+
     push = delay
 
     def schedule(self, at: datetime.datetime) -> None:
         """schedule task to run later"""
-        if not self.__local:
+        if conf.TESTING:
+            pass
+        elif self.__local:
+            self.__rq.scheduler.enqueue_at(at, self.__rq_handler,
+                url=self.url,
+                headers=self.headers,
+                data=self.datab64encoded)
+        else:
             timestamp = timestamp_pb2.Timestamp()
             timestamp.FromDatetime(at)
             task = self.get_http_body()
             task['schedule_time'] = timestamp
             self.__enqueue(request={'parent': self.queue_path,
                 'task': task})
-        else:
-            self.__rq.scheduler.enqueue_at(at, self.__rq_handler,
-                url=self.url,
-                headers=self.headers,
-                data=self.datab64encoded)
             
     def __enqueue(self, request: dict):
         """creates task"""
