@@ -14,11 +14,14 @@ At the moment dj-cloud-task only works with HTTP targets such as Cloud Run, Clou
 
 ### Installation
 
-At this moment this package is only available here in Github, you can install it directly from this repository using pip. Later will be available on PyPI.
+Simple **dj-cloud-task** can be installed with ``pip``:
 
-```sh
-pip install -e git+https://github.com/txiocoder/dj-cloud-task.git@main#egg=cloudtask
-```
+    pip install dj-cloud-task
+
+Or from this repository:
+
+    pip install -e git+https://github.com/txiocoder/dj-cloud-task.git@main#egg=cloudtask
+
 
 #### Requirements
 
