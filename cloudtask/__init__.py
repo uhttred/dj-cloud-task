@@ -3,4 +3,4 @@ from cloudtask.tasks import CloudTaskRequest
 
 default_app_config = 'cloudtask.apps.CloudTaskConfig'
 
-__version__ = '0.1.2'
+__version__ = '0.1.3'

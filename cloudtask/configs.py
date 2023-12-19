@@ -14,6 +14,7 @@ DEFAULTS: dict = {
     'LOCAL_RQ': False,
     'LOCAL_RQ_URL': None,
     'TESTING': False, # Testing Mode
+    'TIMEOUT': None,  # In seconds
 }
 
 class CloudTaskSettings:
