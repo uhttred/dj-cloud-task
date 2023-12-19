@@ -51,7 +51,8 @@ class Task(object):
             data: dict = {},
             headers: dict = {},
             url: str = None,
-            named: Union[bool, str] = False) -> None:
+            named: Union[bool, str] = False,
+            timeout = None) -> None:
         self.__task = task
         self.__data = data
         self.__headers = headers
@@ -60,6 +61,7 @@ class Task(object):
         self.__local = conf.LOCAL_RQ # running locally
         self.named = named
         self.url = url or conf.get_url()
+        self.timeout = timeout or conf.TIMEOUT
         self.setup()
     
     def setup(self) -> None:
@@ -126,6 +128,9 @@ class Task(object):
                 'body': self.datab64encoded,
                 'oidc_token': {'service_account_email': self.__sae}}
             }
+
+        if self.timeout:
+            body['dispatch_deadline'] = self.timeout
         if self.named:
             body['name'] = self.task_path
         return body
