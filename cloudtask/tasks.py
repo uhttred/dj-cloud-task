@@ -1,7 +1,7 @@
 import datetime
 from typing import Any, Callable, Union
 from functools import cached_property, partial
-from google.protobuf import timestamp_pb2 # type: ignore
+from google.protobuf import timestamp_pb2, duration_pb2 # type: ignore
 
 from django.http.request import HttpRequest
 from django.utils.module_loading import import_string
@@ -130,7 +130,9 @@ class Task(object):
             }
 
         if self.timeout:
-            body['dispatch_deadline'] = f"{self.timeout}s"
+            duration = duration_pb2.Duration()
+            duration.FromSeconds(self.timeout)
+            body['dispatch_deadline'] = duration
         if self.named:
             body['name'] = self.task_path
         return body
