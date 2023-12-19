@@ -130,7 +130,7 @@ class Task(object):
             }
 
         if self.timeout:
-            body['dispatch_deadline'] = self.timeout
+            body['dispatch_deadline'] = f"{self.timeout}s"
         if self.named:
             body['name'] = self.task_path
         return body
